@@ -1,6 +1,39 @@
 import Head from 'next/head'
+import { useState } from 'react'
 
 export default function Home({text, title, path}) {
+
+  async function fetchData(url = '', data = {}) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(data)
+    }) 
+    return res.json()
+  }
+
+  async function getArticle(url) {
+    const article = await fetchData('http://localhost:3000/api/scrape', { url })
+    const audio = await fetchData('http://localhost:3000/api/polly', {
+      text: article.text,
+      slug: article.slug
+    })
+    setArticle({...article, ...audio})
+  }
+
+  
+  const [article, setArticle] = useState()
+  const [url, setUrl] = useState("")
+
+  function handleSubmit(e){
+    e.preventDefault();
+    getArticle(url)
+  }
+  function handleInput(e){
+    setUrl(e.target.value)
+  }
 
   return (
     <div className="container">
@@ -8,36 +41,18 @@ export default function Home({text, title, path}) {
         <title>Dev4Cloud</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-    <h1>{title}</h1>
-    <audio src={path} controls />
-    <p>{text}</p>
+      <form onSubmit={handleSubmit}>
+        <input value={url} onChange={handleInput} type="url" placeholder="https://example.com" pattern="https://.*" size="30" />
+        <button type="submit">Load</button>
+      </form>
+      
+      { article && 
+        <div>
+        <h1>{article.title}</h1>
+        <audio src={article.path} controls />
+        <p>{article.text}</p>
+        </div>
+    }
     </div>
   )
-}
-
-async function fetchData(url = '', data = {}) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(data)
-  }) 
-  return res.json()
-}
-
-export async function getStaticProps(context) {
-  const url = "https://www.sueddeutsche.de/politik/trump-biden-brad-parscale-us-wahl-2020-1.4968933"
-  const article = await fetchData('http://localhost:3000/api/scrape', { url })
-  const audio = await fetchData('http://localhost:3000/api/polly', {
-      text: article.text,
-      slug: article.slug
-  })
-
-  return {
-    props: {
-      ...article,
-      ...audio
-    }, 
-  }
 }
