@@ -5,16 +5,18 @@ const Polly = new aws.Polly({
     region: 'eu-central-1'
 })
 
+const formatFileName = string => string.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+const trimText = string => string.replace("\n"," ").substr(0,3000)
 
 export default async (req, res) => {
-    let slug = req.json.slug.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    let params = {
-        'Text': JSON.stringify(req.json.text.replace("\n"," ")).substr(0,3000),
+    const slug = formatFileName(req.body.slug)
+    const params = {
+        'Text': trimText(req.body.text),
         'OutputFormat': 'mp3',
         'LanguageCode': 'de-DE',
         'VoiceId': 'Marlene'
     }
-    console.log(body)
+
     res.setHeader('Content-Type', 'application/json')
     
     Polly.synthesizeSpeech(params, (error, data) => {

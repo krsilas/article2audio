@@ -2,6 +2,12 @@
 
 const puppeteer = require('puppeteer');
 const basePath = process.cwd();
+const unfluff = require('unfluff')
+
+function getSlug(url){
+  const slug = new URL(url);
+  return slug.pathname;
+}
 
 async function scrapeHTML(url){
   const browser = await puppeteer.launch();
@@ -45,14 +51,13 @@ async function scrapeHTML(url){
 
 
 export default async (req, res) => {
-  const url = "https://www.sueddeutsche.de/politik/trump-biden-brad-parscale-us-wahl-2020-1.4968933"
-  const url2 = "https://www.welt.de/politik/ausland/article208498979/Tod-von-George-Floyd-Warum-ist-der-Polizist-nicht-im-Gefaengnis.html"
-  const {html, lang} = await scrapeHTML(url)
-  const extractor = require('unfluff')
-  const data = lang != 'undefinded' ? extractor(html, 'de') : extractor(html, lang)
-  const slug = new URL(url);
-  data.slug = slug.pathname;
+  const { html, lang } = await scrapeHTML(req.body.url)
+  const data = unfluff(html, lang || 'de')
+  
   res.statusCode = 200
   res.setHeader('Content-Type', 'application/json')
-  res.end(JSON.stringify({ ...data }))
+  res.end(JSON.stringify({ 
+    ...data,
+    slug: getSlug(req.body.url)
+  }))
 }

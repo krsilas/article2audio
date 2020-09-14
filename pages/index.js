@@ -15,19 +15,21 @@ export default function Home({text, title, path}) {
   )
 }
 
-function fetchData(url = '', data = {}) {
+async function fetchData(url = '', data = {}) {
   const res = await fetch(url, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      },
+    },
     body: JSON.stringify(data)
   }) 
+  return res.json()
 }
 
 export async function getStaticProps(context) {
-  const article = fetchData('http://localhost:3000/api/scrape')
-  const audio = fetchData('http://localhost:3000/api/polly', {
+  const url = "https://www.sueddeutsche.de/politik/trump-biden-brad-parscale-us-wahl-2020-1.4968933"
+  const article = await fetchData('http://localhost:3000/api/scrape', { url })
+  const audio = await fetchData('http://localhost:3000/api/polly', {
       text: article.text,
       slug: article.slug
   })
@@ -36,6 +38,6 @@ export async function getStaticProps(context) {
     props: {
       ...article,
       ...audio
-    }, // will be passed to the page component as props
+    }, 
   }
 }
