@@ -1,15 +1,12 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
-const puppeteer = require('puppeteer');
-const basePath = process.cwd();
-const unfluff = require('unfluff')
+import puppeteer from 'puppeteer'
+import unfluff from 'unfluff'
 
 function getSlug(url){
   const slug = new URL(url);
   return slug.pathname;
 }
 
-async function scrapeHTML(url){
+export async function scrapeHTML(req, res) {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   await page.setRequestInterception(true);
@@ -17,7 +14,7 @@ async function scrapeHTML(url){
   //Block 3rd-Party-JavaScript
   page.on("request", request => {
     const baseUrl = (url) => url.split('/')[2]
-    if (request.resourceType() === "script" && baseUrl(request._url) !== baseUrl(url)) {
+    if (request.resourceType() === "script" && baseUrl(request._url) !== baseUrl(req.body.url)) {
       request.abort()
     } else {
       request.continue()
@@ -33,7 +30,7 @@ async function scrapeHTML(url){
   // }];
   // await page.setCookie(...cookies)
 
-  await page.goto(url);
+  await page.goto(req.body.url);
   await page.evaluate(() => {
     const ignore = ["[data-app-hidden]", "article section.clear-both ul", ".hidden", "figcaption", "footer"]
     ignore.forEach((element)=>{
@@ -46,18 +43,6 @@ async function scrapeHTML(url){
   const lang = await page.evaluate(()=>document.querySelector('html').getAttribute('lang'))
   const html = await page.content();
   await browser.close();
-  return { html, lang }
-};
-
-
-export default async (req, res) => {
-  const { html, lang } = await scrapeHTML(req.body.url)
   const data = unfluff(html, lang || 'de')
-  
-  res.statusCode = 200
-  res.setHeader('Content-Type', 'application/json')
-  res.end(JSON.stringify({ 
-    ...data,
-    slug: getSlug(req.body.url)
-  }))
-}
+  res.status(200).json({ ...data, slug: getSlug(req.body.url) })
+};
