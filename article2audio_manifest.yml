@@ -1,9 +1,11 @@
 applications:
 - name: article2audio
-  disk_quota: 1G
+  disk_quota: 4G
   instances: 1
   memory: 1024M
-  buildpack: nodejs_buildpack
+  buildpacks: 
+    - https://github.com/cloudfoundry/apt-buildpack
+    - nodejs_buildpack
   command: node --experimental-modules app.js
   routes:
-  - route: article2audio.apps.internal
+    - route: article2audio.apps.internal

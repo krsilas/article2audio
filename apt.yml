@@ -1,0 +1,4 @@
+---
+packages:
+    - libnss3
+    - libatk1.0-0

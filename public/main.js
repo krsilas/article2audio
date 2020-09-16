@@ -1,10 +1,11 @@
-import Head from 'next/head'
+import React from "react";
+import ReactDOM from "react-dom";
 import { useEffect, useState } from 'react'
-import { fetchData } from './utils'
-import { Polly } from './aws'
+import { fetchData } from '../src/utils'
+import { Polly } from '../src/aws'
 
 
-export default function Home() {
+function Index() {
   const [article, setArticle] = useState()
   const [audioUrl, setAudioUrl] = useState()
   const [url, setUrl] = useState("")
@@ -60,3 +61,5 @@ export default function Home() {
     </div>
   )
 }
+
+ReactDOM.render(<Index />, document.getElementById("app"))

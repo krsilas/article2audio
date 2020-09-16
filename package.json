@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "node --experimental-modules app.js",
-    "start": "node --experimental-modules app.js"
+    "start": "node --experimental-modules app.js",
+    "build": "parcel build index.html"
   },
   "type": "module",
   "dependencies": {
