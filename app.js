@@ -6,10 +6,6 @@ import { scrapeHTML } from './api/scrape.js'
 import bodyParser from 'body-parser'
 //add body parser as middleware for all requests
 app.use(bodyParser.json());
- 
-app.get('/', (req, res) => {
-  res.send('index.html')
-})
 
 app.post('/api/scrape', (req, res) => {
     scrapeHTML(req, res)
@@ -18,5 +14,7 @@ app.post('/api/scrape', (req, res) => {
 app.post('/api/polly', (req, res) => {
     speechSynthesisTask(req,res)
 })
+
+app.use(express.static('frontend/dist'));
  
 app.listen(process.env.PORT || 3000)
