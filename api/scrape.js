@@ -20,18 +20,19 @@ export async function scrapeHTML(req, res) {
       request.continue()
     }
   })
-  
-  // const cookies = [{
-  //   'name': 'euconsent',
-  //   'value': 'BO0G9R8O0G9R8AGABBENDL-AAAAv0DIIRAgYwoAg4PCFkgATAGCAiAgAwAQAAQAAQAYAAgBhCAAggAEACQgAAAQAAABABAIAAAAQEAgAgACAAJAAIAACAAEAABBAAIgAAAAAAAAAAAQAAAAAAAEAAAAAAAAAAA'
-  // }, {
-  //   'name': 'spconsent',
-  //   'value': 'eyJ2YWx1ZSI6dHJ1ZSwidXBkYXRlZF9hdCI6MTU5MDY2MjgzOH0='
-  // }];
-  // await page.setCookie(...cookies)
+
+  //Abort on 404
+  //TODO: This is async and run after the other operations
+  page.on("response", response => {
+    if (response.url().match(req.body.url) && response.status() == 404) {
+      //res.status(404).json({ error: 'Page not found!' })
+    }
+  })
+
 
   await page.goto(req.body.url);
   await page.evaluate(() => {
+    //Ignore irrelevant content
     const ignore = ["[data-app-hidden]", "article section.clear-both ul", ".hidden", "figcaption", "footer"]
     ignore.forEach((element)=>{
       const nodes = document.querySelectorAll(element)
@@ -40,9 +41,12 @@ export async function scrapeHTML(req, res) {
       })
     })
   })
-  const lang = await page.evaluate(()=>document.querySelector('html').getAttribute('lang'))
+  const language = await page.evaluate(()=>document.querySelector('html').getAttribute('lang'))
   const html = await page.content();
   await browser.close();
-  const data = unfluff(html, lang || 'de')
-  res.status(200).json({ ...data, slug: getSlug(req.body.url) })
+
+  const data = unfluff(html, language || 'de')
+  const slug = getSlug(req.body.url)
+
+  res.status(200).json({ ...data, slug })
 };
