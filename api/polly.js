@@ -14,7 +14,7 @@ export const speechSynthesisTask = async (req, res) => {
     const params = {
         'Text': trimText(req.body.text),
         'OutputFormat': 'mp3',
-        'OutputS3BucketName': 'article-audio2', 
+        'OutputS3BucketName': process.env.AWS_S3_BUCKET_NAME, 
         'LanguageCode': deutsch ? 'de-DE' : 'en-US',
         'VoiceId': deutsch ? 'Marlene' : 'Joanna'
     }
